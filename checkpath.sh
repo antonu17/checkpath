@@ -54,6 +54,8 @@ _checkpath_prepare() {
 checkpaths() {
     test -z "$CHECKPATHS" && exit 0
     _checkpath_prepare
+    diff_paths=$(git diff --name-only HEAD~1..HEAD)
+    echo "$diff_paths"
 }
 
 checkpaths
