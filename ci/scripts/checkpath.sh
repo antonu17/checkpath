@@ -54,5 +54,5 @@ checkpaths() {
     echo "$diff_paths"
 }
 
-CHECKPATH="path1"
+echo "$CHECKPATH"
 checkpaths
