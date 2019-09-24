@@ -51,4 +51,9 @@ _checkpath_prepare() {
     _checkpath_is_pkg_installed jq || _checkpath_install_pkg "$pkgman" jq
 }
 
-_checkpath_prepare
+checkpaths() {
+    test -z "$CHECKPATHS" && exit 0
+    _checkpath_prepare
+}
+
+checkpaths
