@@ -42,8 +42,8 @@ _checkpath_prepare() {
 _checkpath_maybe_teliaoss_pr() {
     metadata_file=$(find . -path '*.git/resource/metadata.json')
     test -z "$metadata_file" && return
-    HEAD=$(jq -r '.[] | select(.name=="head_sha") .value' .git/resource/metadata.json)
-    BASE=$(jq -r '.[] | select(.name=="base_sha") .value' .git/resource/metadata.json)
+    HEAD=$(jq -r '.[] | select(.name=="head_sha") .value' "$metadata_file")
+    BASE=$(jq -r '.[] | select(.name=="base_sha") .value' "$metadata_file")
     git diff --name-only "${BASE}~1..${HEAD}"
 }
 
