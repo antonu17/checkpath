@@ -64,7 +64,7 @@ _checkpath_is_required() {
 }
 
 checkpaths() {
-    test -z "$CHECKPATHS" && exit 0
+    test -z "$CHECKPATHS" && return
     _checkpath_prepare
 
     diff_paths=$(_checkpath_maybe_teliaoss_pr)
