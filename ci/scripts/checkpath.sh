@@ -53,8 +53,8 @@ _checkpath_is_required() {
     changed_paths_json=$1
     wanted_paths_json=$2
 
-    for wanted_path in $(echo "$wanted_paths_json" | jq -r '.'); do
-        if echo "$changed_paths_json" | jq -r '.' | grep "^$wanted_path"; then
+    for wanted_path in $(echo "$wanted_paths_json" | jq -r '.[]'); do
+        if echo "$changed_paths_json" | jq -r '.[]' | grep "^$wanted_path"; then
             return
         fi
     done
