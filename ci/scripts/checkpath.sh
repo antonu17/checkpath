@@ -49,17 +49,35 @@ _checkpath_maybe_last_commit() {
     git diff --name-only "HEAD~1..HEAD" | jq --raw-input --slurp 'split("\n") | map(select(. != ""))'
 }
 
+_checkpath_is_required() {
+    changed_paths=$1
+    wanted_paths=$2
+
+    cat <<EOF | jq '.'
+{
+    "changed_paths": $changed_paths,
+    "wanted_paths": $wanted_paths
+}
+EOF
+
+# def intersect(x;y):
+#   ( (x|unique) + (y|unique) | sort) as $sorted
+#   | reduce range(1; $sorted|length) as $i
+#       ([];
+#        if $sorted[$i] == $sorted[$i-1] then . + [$sorted[$i]] else . end) ;
+}
+
 checkpaths() {
     test -z "$CHECKPATH" && exit 0
     _checkpath_prepare
     diff_paths=$(_checkpath_maybe_teliaoss_pr)
     if [ -n "$diff_paths" ]; then
-        echo "$diff_paths"
+        _checkpath_is_required "$diff_paths" "$CHECKPATH"
         return
     fi
     diff_paths=$(_checkpath_maybe_last_commit)
     if [ -n "$diff_paths" ]; then
-        echo "$diff_paths"
+        _checkpath_is_required "$diff_paths" "$CHECKPATH"
         return
     fi
 }
