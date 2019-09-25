@@ -59,14 +59,14 @@ jobs:
         source: {repository: alpine/git, tag: "latest"}
 
       inputs:
-        - name: pull-request
+        - name: master
 
       run:
         path: /bin/sh
         args:
           - -xce
           - |
-            cd pull-request
+            cd master
             source ci/scripts/checkpath.sh
             git log --graph --all --color --pretty=format:"%x1b[31m%h%x09%x1b[32m%d%x1b[0m%x20%s" > log.txt
             cat log.txt
