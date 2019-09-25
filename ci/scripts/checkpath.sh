@@ -38,8 +38,8 @@ _checkpath_prepare() {
 }
 
 _checkpath_maybe_teliaoss_pr() {
-    metadata_file=$(find . -path '*.git/resource/metadata.json')
-    test -z "$metadata_file" && return
+    metadata_file=".git/resource/metadata.json"
+    test -f "$metadata_file" || return
     HEAD=$(jq -r '.[] | select(.name=="head_sha") .value' "$metadata_file")
     BASE=$(jq -r '.[] | select(.name=="base_sha") .value' "$metadata_file")
     git diff --name-only "${BASE}..${HEAD}" | jq --raw-input --slurp 'split("\n") | map(select(. != ""))'
@@ -68,16 +68,18 @@ EOF
 }
 
 checkpaths() {
-    test -z "$CHECKPATH" && exit 0
+    test -z "$CHECKPATHS" && exit 0
     _checkpath_prepare
+
     diff_paths=$(_checkpath_maybe_teliaoss_pr)
     if [ -n "$diff_paths" ]; then
-        _checkpath_is_required "$diff_paths" "$CHECKPATH"
+        _checkpath_is_required "$diff_paths" "$CHECKPATHS"
         return
     fi
+
     diff_paths=$(_checkpath_maybe_last_commit)
     if [ -n "$diff_paths" ]; then
-        _checkpath_is_required "$diff_paths" "$CHECKPATH"
+        _checkpath_is_required "$diff_paths" "$CHECKPATHS"
         return
     fi
 }

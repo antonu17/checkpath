@@ -44,7 +44,7 @@ jobs:
             cat log.txt
 
       params:
-        CHECKPATH: '[ "a", "b" ]'
+        CHECKPATHS: '[ "path2/" ]'
 
 - name: master-test
   plan:
@@ -72,4 +72,4 @@ jobs:
             cat log.txt
 
       params:
-        CHECKPATH: '[ "a", "b" ]'
+        CHECKPATHS: '[ "path1/", "ci" ]'
