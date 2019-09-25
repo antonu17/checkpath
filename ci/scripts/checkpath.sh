@@ -39,7 +39,7 @@ _checkpath_prepare() {
 
 _checkpath_maybe_teliaoss_pr() {
     metadata_file=".git/resource/metadata.json"
-    test -f "$metadata_file" || return
+    test ! -f "$metadata_file" && return
     HEAD=$(jq -r '.[] | select(.name=="head_sha") .value' "$metadata_file")
     BASE=$(jq -r '.[] | select(.name=="base_sha") .value' "$metadata_file")
     git diff --name-only "${BASE}..${HEAD}" | jq --raw-input --slurp 'split("\n") | map(select(. != ""))'
