@@ -7,10 +7,14 @@ resource_types:
 resources:
 - name: pull-request
   type: pull-request
-  check_every: 24h
   source:
     repository: antonu17/checkpath
     access_token: ((github_token))
+
+- name: master
+  type: git
+  source:
+    uri: https://((github_token))@github.com/antonu17/checkpath.git
 
 jobs:
 - name: test
@@ -18,6 +22,34 @@ jobs:
   - get: pull-request
     trigger: true
     version: every
+
+  - task: unit-test
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: alpine/git, tag: "latest"}
+
+      inputs:
+        - name: pull-request
+
+      run:
+        path: /bin/sh
+        args:
+          - -xce
+          - |
+            cd pull-request
+            source ci/scripts/checkpath.sh
+            git log --graph --all --color --pretty=format:"%x1b[31m%h%x09%x1b[32m%d%x1b[0m%x20%s" > log.txt
+            cat log.txt
+
+      params:
+        CHECKPATH: '[ "a", "b" ]'
+
+- name: master-test
+  plan:
+  - get: master
+    trigger: true
 
   - task: unit-test
     config:

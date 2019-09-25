@@ -42,7 +42,7 @@ _checkpath_maybe_teliaoss_pr() {
     test -z "$metadata_file" && return
     HEAD=$(jq -r '.[] | select(.name=="head_sha") .value' "$metadata_file")
     BASE=$(jq -r '.[] | select(.name=="base_sha") .value' "$metadata_file")
-    git diff --name-only "${BASE}~1..${HEAD}" | jq --raw-input --slurp 'split("\n") | map(select(. != ""))'
+    git diff --name-only "${BASE}..${HEAD}" | jq --raw-input --slurp 'split("\n") | map(select(. != ""))'
 }
 
 _checkpath_maybe_last_commit() {
