@@ -38,28 +38,44 @@ _checkpath_prepare() {
 }
 
 _checkpath_maybe_teliaoss_pr() {
-    metadata_file=$(find . -path '*.git/resource/metadata.json')
-    test -z "$metadata_file" && return
+    metadata_file=".git/resource/metadata.json"
+    test -f "$metadata_file" || return
     HEAD=$(jq -r '.[] | select(.name=="head_sha") .value' "$metadata_file")
     BASE=$(jq -r '.[] | select(.name=="base_sha") .value' "$metadata_file")
-    git diff --name-only "${BASE}~1..${HEAD}" | jq --raw-input --slurp 'split("\n") | map(select(. != ""))'
+    git diff --name-only "${BASE}..${HEAD}" | jq --raw-input --slurp 'split("\n") | map(select(. != ""))'
 }
 
 _checkpath_maybe_last_commit() {
     git diff --name-only "HEAD~1..HEAD" | jq --raw-input --slurp 'split("\n") | map(select(. != ""))'
 }
 
+_checkpath_is_required() {
+    changed_paths_json=$1
+    wanted_paths_json=$2
+
+    for wanted_path in $(echo "$wanted_paths_json" | jq -r '.[]'); do
+        if echo "$changed_paths_json" | jq -r '.[]' | grep "^$wanted_path"; then
+            return
+        fi
+    done
+
+    echo "CHECKPATHS doesn't have any changed path, skipping..."
+    exit 0
+}
+
 checkpaths() {
-    test -z "$CHECKPATH" && exit 0
+    test -z "$CHECKPATHS" && exit 0
     _checkpath_prepare
+
     diff_paths=$(_checkpath_maybe_teliaoss_pr)
     if [ -n "$diff_paths" ]; then
-        echo "$diff_paths"
+        _checkpath_is_required "$diff_paths" "$CHECKPATHS"
         return
     fi
+
     diff_paths=$(_checkpath_maybe_last_commit)
     if [ -n "$diff_paths" ]; then
-        echo "$diff_paths"
+        _checkpath_is_required "$diff_paths" "$CHECKPATHS"
         return
     fi
 }
