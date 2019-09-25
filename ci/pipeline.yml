@@ -40,6 +40,4 @@ jobs:
             cat log.txt
 
       params:
-        CHECKPATH: |-
-          - "a"
-          - "b"
+        CHECKPATH: '[ "a", "b" ]'
