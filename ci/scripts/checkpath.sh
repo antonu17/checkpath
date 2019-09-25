@@ -50,21 +50,17 @@ _checkpath_maybe_last_commit() {
 }
 
 _checkpath_is_required() {
-    changed_paths=$1
-    wanted_paths=$2
+    changed_paths_json=$1
+    wanted_paths_json=$2
 
-    cat <<EOF | jq '.'
-{
-    "changed_paths": $changed_paths,
-    "wanted_paths": $wanted_paths
-}
-EOF
+    for wanted_path in $(echo "$wanted_paths_json" | jq -r '.'); do
+        if echo "$changed_paths_json" | jq -r '.' | grep "^$wanted_path"; then
+            return
+        fi
+    done
 
-# def intersect(x;y):
-#   ( (x|unique) + (y|unique) | sort) as $sorted
-#   | reduce range(1; $sorted|length) as $i
-#       ([];
-#        if $sorted[$i] == $sorted[$i-1] then . + [$sorted[$i]] else . end) ;
+    echo "CHECKPATHS doesn't have any changed path, skipping..."
+    exit 0
 }
 
 checkpaths() {
