@@ -1,7 +1,5 @@
 #!/bin/sh
 
-set -ex
-
 _checkpath_is_pkg_installed() {
     command -v "$1" >/dev/null
 }
@@ -34,7 +32,7 @@ _checkpath_detect_pkgman() {
 _checkpath_prepare() {
     pkgman=$(_checkpath_detect_pkgman)
     test -z "$pkgman" && return 1
-    test "$pkgman" = "apt-get" && apt-get update -q
+    test "$pkgman" = "apt-get" && apt-get update --quiet
     _checkpath_is_pkg_installed git || _checkpath_install_pkg "$pkgman" git
     _checkpath_is_pkg_installed jq || _checkpath_install_pkg "$pkgman" jq
 }
@@ -42,17 +40,28 @@ _checkpath_prepare() {
 _checkpath_maybe_teliaoss_pr() {
     metadata_file=$(find . -path '*.git/resource/metadata.json')
     test -z "$metadata_file" && return
-    HEAD=$(jq -r '.[] | select(.name=="head_sha") .value' .git/resource/metadata.json)
-    BASE=$(jq -r '.[] | select(.name=="base_sha") .value' .git/resource/metadata.json)
-    git diff --name-only "${BASE}~1..${HEAD}"
+    HEAD=$(jq -r '.[] | select(.name=="head_sha") .value' "$metadata_file")
+    BASE=$(jq -r '.[] | select(.name=="base_sha") .value' "$metadata_file")
+    git diff --name-only "${BASE}~1..${HEAD}" | jq --raw-input --slurp 'split("\n") | map(select(. != ""))'
+}
+
+_checkpath_maybe_last_commit() {
+    git diff --name-only "HEAD~1..HEAD" | jq --raw-input --slurp 'split("\n") | map(select(. != ""))'
 }
 
 checkpaths() {
     test -z "$CHECKPATH" && exit 0
     _checkpath_prepare
     diff_paths=$(_checkpath_maybe_teliaoss_pr)
-    echo "$diff_paths"
+    if [ -n "$diff_paths" ]; then
+        echo "$diff_paths"
+        return
+    fi
+    diff_paths=$(_checkpath_maybe_last_commit)
+    if [ -n "$diff_paths" ]; then
+        echo "$diff_paths"
+        return
+    fi
 }
 
-CHECKPATH="path1"
 checkpaths
